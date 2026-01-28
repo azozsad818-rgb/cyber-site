@@ -11,6 +11,7 @@
     font-family: monospace;
   }
 
+  /* Card */
   #card{
     position:absolute;
     top:50%;
@@ -22,7 +23,6 @@
     text-align:center;
     z-index:10;
   }
-
   button{
     margin-top:15px;
     padding:10px 20px;
@@ -33,13 +33,42 @@
     cursor:pointer;
   }
 
+  /* Full screen canvas */
   canvas{
     position:fixed;
-    top:0;
-    left:0;
-    width:100vw;
-    height:100vh;
+    inset:0;
     display:none;
+  }
+
+  /* Big warning text */
+  #warning{
+    position:fixed;
+    inset:0;
+    display:none;
+    place-items:center;
+    text-align:center;
+    color:red;
+    font-size:42px;
+    font-weight:900;
+    z-index:9;
+    text-shadow: 0 0 20px red, 0 0 40px darkred;
+    animation: blink .6s infinite alternate;
+  }
+  @keyframes blink{
+    from{opacity:.3}
+    to{opacity:1}
+  }
+
+  /* Screen shake */
+  .shake{
+    animation: shake .08s infinite;
+  }
+  @keyframes shake{
+    0%{transform:translate(0,0)}
+    25%{transform:translate(3px,-3px)}
+    50%{transform:translate(-3px,3px)}
+    75%{transform:translate(3px,3px)}
+    100%{transform:translate(0,0)}
   }
 </style>
 </head>
@@ -55,44 +84,59 @@
 
 <canvas id="screen"></canvas>
 
+<div id="warning">
+  ⚠ SYSTEM BREACHED ⚠<br>
+  DEVICE COMPROMISED
+</div>
+
+<audio id="alarm" loop>
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
 <script>
 function start(){
+  // hide card
   document.getElementById("card").style.display="none";
 
+  // shake screen
+  document.body.classList.add("shake");
+
+  // show warning
+  document.getElementById("warning").style.display="grid";
+
+  // play alarm (needs user click -> OK)
+  const alarm = document.getElementById("alarm");
+  alarm.volume = 0.6;
+  alarm.play().catch(()=>{});
+
+  // red code rain
   const canvas = document.getElementById("screen");
   const ctx = canvas.getContext("2d");
   canvas.style.display="block";
-
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const chars = "01 HACKED SYSTEM BREACH ROOT ACCESS ";
-  const fontSize = 14;
-  const columns = Math.floor(canvas.width / fontSize);
-  const drops = Array(columns).fill(0);
+  const chars = "01 SYSTEM BREACHED ROOT ACCESS ";
+  const size = 14;
+  const cols = Math.floor(canvas.width / size);
+  const drops = Array(cols).fill(0);
 
   function draw(){
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
-
     ctx.fillStyle = "red";
-    ctx.font = fontSize + "px monospace";
+    ctx.font = size+"px monospace";
 
     for(let i=0;i<drops.length;i++){
-      const text = chars[Math.floor(Math.random()*chars.length)];
-      ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-
-      if(drops[i]*fontSize > canvas.height && Math.random() > 0.95){
-        drops[i] = 0;
-      }
+      const ch = chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillText(ch, i*size, drops[i]*size);
+      if(drops[i]*size > canvas.height && Math.random()>0.97) drops[i]=0;
       drops[i]++;
     }
   }
-
-  setInterval(draw, 25); // سرعة عالية
+  setInterval(draw, 25);
 }
 </script>
 
 </body>
-
 </html>
